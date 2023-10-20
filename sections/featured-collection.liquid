@@ -1,0 +1,286 @@
+<style>
+  
+  .section-id-{{ section.id }} .has-paging__title {
+      font-size: {{ section.settings.title_size}}px;
+      color:#000000;
+      margin-bottom:40px;
+    }
+
+  .section-id-{{section.id}} {
+    background-color:#ffffff;
+    padding-top:{{section.settings.padding_top}}px !important;
+    padding-bottom:{{section.settings.padding_bottom}}px !important;
+  }
+
+  .section-id-{{section.id}} .product-block__title {
+font-size:{{section.settings.product_title_size}}px;
+font-family: {{section.settings.product_title_font}};
+    font-weight:{{section.settings.product_title_weight}};
+    color:black;
+  }
+
+  .section-id-{{section.id}} .subheading{
+font-size:{{section.settings.subheading_size}}px;
+
+  }
+   .section-id-{{section.id}} .price{
+font-size:{{section.settings.product_title_size}}px;
+font-family: {{section.settings.product_title_font}};
+    font-weight:{{section.settings.product_title_weight}};
+     color:black;
+  }  
+
+  .prev {
+    padding-left:0 !important;
+    margin-left: 0 !important;
+  }
+  
+</style>
+
+{%- liquid
+  if section.settings.enable_carousel
+    assign product_limit = 20
+  else
+    assign product_limit = section.settings.grid | times: section.settings.rows
+  endif
+  assign collection = collections[section.settings.collection]
+-%}
+
+<div class="section-id-{{ section.id }} collection-slider-row {% if section.settings.use_alt_bg %}use-alt-bg{% endif %}" data-section-type="featured-collection" data-components="accordion,modal,price-range">
+  <div class="container{% if section.settings.enable_carousel %} container--not-mobile{% endif %}{% if section.settings.full_width %} container--no-max{% endif %}">
+    <div class="{% if section.settings.enable_carousel %}collection-slider{% endif %}">
+      {% if section.settings.subheading != ''  %}<div class = ' bold mb-22 letter-spacing text-dark subheading'>{{ section.settings.subheading }}</div>{% endif %}
+      <h2 class="hometitle h4-style  has-paging " data-cc-animate data-cc-animate-delay="0.3s">
+      <div class="has-paging__title" "><span>{{ section.settings.title | escape }}</span></div>
+  {% if section.settings.enable_carousel %}<a class="prev ltr-icon" href="#">{% render 'svg-chevron-left' %}</a>{% endif %}
+        
+        {% if section.settings.enable_carousel %}<a class="next ltr-icon" href="#">{% render 'svg-chevron-right' %}</a>{% endif %}
+      </h2>
+
+      {%- if section.settings.show_view_all -%}
+        <div class="view-all align-center" data-cc-animate data-cc-animate-delay="0.3s">
+          <a class="small-feature-link" href="{{ collection.url }}">{{ 'collections.general.view_all' | t }}</a>
+        </div>
+      {%- endif -%}
+
+      <div class="collection-listing" data-cc-animate="cc-fade-in-up">
+        <div class="product-list product-list--per-row-{{ section.settings.grid }} product-list--per-row-mob-{{ settings.prod_thumb_mob_per_row }} product-list--image-shape-{{ settings.prod_thumb_shape }} {% if section.settings.enable_carousel %}carousel{% endif %}">
+          {% if section.settings.collection == blank %}
+            {% for i in (1..product_limit) %}
+              {% render 'onboarding-product-block', forloop: forloop %}
+            {% endfor %}
+          {% else %}
+            {%- liquid
+              if settings.prod_thumb_shape == 'portrait-23'
+                assign chosen_aspect_ratio = 0.67
+              elsif settings.prod_thumb_shape == 'portrait-45'
+                assign chosen_aspect_ratio = 0.8
+              elsif settings.prod_thumb_shape == 'square'
+                assign chosen_aspect_ratio = 1.0
+              elsif settings.prod_thumb_shape == 'landscape-54'
+                assign chosen_aspect_ratio = 1.25
+              elsif settings.prod_thumb_shape == 'landscape-32'
+                assign chosen_aspect_ratio = 1.50
+              elsif settings.prod_thumb_shape == 'tallest'
+                assign chosen_aspect_ratio = 99
+                for product in collection.products limit: product_limit
+                  if product.featured_media.preview_image.aspect_ratio < chosen_aspect_ratio
+                    assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                  endif
+                endfor
+              else
+                assign chosen_aspect_ratio = 0
+                for product in collection.products limit: product_limit
+                  if product.featured_media.preview_image.aspect_ratio > chosen_aspect_ratio
+                    assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                  endif
+                endfor
+              endif
+            -%}
+            {% for product in collection.products limit: product_limit %}
+              {% render 'product-block', product: product, collection: collection, manual_image_load: section.settings.enable_carousel, custom_aspect_ratio: chosen_aspect_ratio, no_swiping: section.settings.enable_carousel, no_quick_buy_markup: section.settings.enable_carousel %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if settings.quickbuy_style != 'off' and section.settings.enable_carousel %}
+    <div class="quickbuy-container">
+      <a href="#" class="close-detail" aria-label="{{ 'products.quick_buy.close' | t }}" tabindex="-1">{% render 'svg-x' %}</a>
+      <div class="inner"></div>
+    </div>
+  {% endif %}
+</div>
+
+
+{% schema %}
+  {
+    "name": "Featured collection",
+    "class": "section-featured-collection",
+    "settings": [
+       {
+      "type": "range",
+      "id": "padding_top",
+      "min": 20,
+      "max": 120,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 20,
+      "max": 120,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 60
+    },       {
+        "type": "text",
+        "id": "subheading",
+        "label": "Subheading",
+        "default": "Sub heading"
+      },         
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Featured collection"
+      },
+      {
+        "type": "range",
+        "id": "title_size",
+        "label": "Title size",
+        "min": 14,
+        "max": 80,
+        "unit": "px",
+        "step": 1,
+        "default": 20
+      },    
+      {
+        "type": "range",
+        "id": "subheading_size",
+        "label": "Subheading size",
+        "min": 6,
+        "max": 80,
+        "unit": "px",
+        "step": 1,
+        "default": 12
+      },      
+      {
+    "type": "select",
+    "id": "product_title_font",
+    "label": "Product tile font",
+    "options": [
+      {
+        "value": "europa, serif",
+        "label": "Europa"
+      },
+      {
+        "value": "cormorant-garamond, serif",
+        "label": "Garamond"
+      }
+      
+    ],
+    "default": "europa, serif"
+  },
+        {
+    "type": "select",
+    "id": "product_title_weight",
+    "label": "Product title weight",
+    "options": [
+      {
+        "value": "300",
+        "label": "Light"
+      },
+      {
+        "value": "400",
+        "label": "Normal"
+      },
+      {
+        "value": "700",
+        "label": "bold"
+      }      
+    ],
+    "default": "400"
+  },      
+    {
+          "type": "range",
+          "id": "product_title_size",
+          "min": 8,
+          "max": 82,
+          "step": 1,
+          "label": "Product title size",
+          "unit": "px",
+          "default": 18
+        }, 
+      {
+        "type": "collection",
+        "id": "collection",
+        "label": "Collection"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendor",
+        "default": false
+      },
+     
+      {
+        "type": "checkbox",
+        "id": "enable_carousel",
+        "label": "Enable carousel",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Products per row",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "range",
+        "id": "rows",
+        "label": "Rows",
+        "info": "Does not apply to carousel layout",
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "default": 1
+      },
+      {
+        "type": "checkbox",
+        "id": "use_alt_bg",
+        "label": "Use alternate section color",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_view_all",
+        "label": "Show 'View all' link",
+        "default": true
+      },
+      {
+        "id": "full_width",
+        "type": "checkbox",
+        "label": "Full page width",
+        "default": true
+      }
+    ],
+    "presets": [
+      {
+        "name": "Featured collection",
+        "settings": {
+          "title": "Featured collection"
+        }
+      }
+    ]
+  }
+{% endschema %}

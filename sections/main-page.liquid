@@ -1,0 +1,33 @@
+<style>
+  #shopify-section-template--17515550507300__main {
+    margin-top:0px;
+    margin-bottom:0px;
+  }
+</style>
+
+{% unless section.settings.full_width %}<div class="article">{% endunless %}
+  <div class="container cf" data-cc-animate>
+    
+    <div class="rte" >
+      {{ page.content }}
+    </div>
+  </div>
+{% unless section.settings.full_width %}</div>{% endunless %}
+
+
+{% schema %}
+  {
+    "name": "Page",
+    "class": "page-section-spacing",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "full_width",
+        "label": "Full width",
+        "default": false
+      }
+         
+    ]
+  }
+{% endschema %}
+

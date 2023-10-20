@@ -1,0 +1,580 @@
+
+<style>
+
+  /*About page subheading */
+  #shopify-section-template--17603970957604__cb9c1a56-c0e3-49eb-a833-46eb23f545c2 .subheading {
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:2px
+  }
+  
+  #{{ section.id }}  {
+      background-color:{{  section.settings.background_color}};
+    padding-top:{{section.settings.padding_top}}px;
+    padding-bottom:{{section.settings.padding_bottom}}px;
+    }
+
+  {%- for block in section.blocks -%} 
+       #{{ section.id }} .majortitle  {
+      font-size:{{block.settings.title_size}}px;
+         font-family:{{block.settings.title_font}} !important;
+         font-weight: {{block.settings.title_weight}};
+
+           {% if block.settings.center_heading %}
+             text-align: center;
+             {% endif %}}
+    }    
+
+  #{{section.id}} .subheading {
+    font-size:{{block.settings.subheading_size}}px !important;
+    font-weight:{{block.settings.subheading_weight}} !important;
+    font-family:{{block.settings.subheading_font}} !important;
+    
+  }
+    {%- endfor -%}}
+
+</style>
+
+<div id = {{ section.id }} class="{% unless section.settings.full_width %}article{% endunless %} {% if section.settings.use_alt_bg %}use-alt-bg fully-padded-row--{{ section.settings.height }}{% else %}fully-spaced-row--{{ section.settings.height }}{% endif %}" data-cc-animate>
+  <div class="container">
+    <div class="align-{{ section.settings.text_alignment }} spaced-column">
+      {% assign skip_block_count = 0 %}
+      {% for block in section.blocks %}
+        {%- liquid
+          if skip_block_count > 0
+            assign skip_block_count = skip_block_count | minus: 1
+            continue
+          endif
+        -%}
+        {% case block.type %}
+          {% when 'heading' %}
+            {% if block.settings.use_h1 %}
+              <h1 class="majortitle in-content" {{ block.shopify_attributes }}>{{ block.settings.title | escape }}</h1>
+            {% else %}
+              <h2 class="majortitle in-content h1-style" {{ block.shopify_attributes }}>{{ block.settings.title | escape }}</h2>
+            {% endif %}
+
+          {% when 'subheading' %}
+            <div class="subheading subheading--over lightly-spaced-row-above" {{ block.shopify_attributes }}>{{ block.settings.subheading | escape }}</div>
+
+          {% when 'text' %}
+            <div class="rte lightly-spaced-row {% if block.settings.enlarge_text %}large-text{% endif %}" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+
+          {% when 'button' %}
+            <div class="lightly-spaced-row-above button-row" {{ block.shopify_attributes }}>
+              <a class="{% if block.settings.button_style != 'link' %}btn btn--{{ block.settings.button_style }}{% else %}small-feature-link{% endif %} button-row__button" href="{{ block.settings.button_link }}">{{ block.settings.button_label | escape }}</a>
+              {%- assign skip_block_count = 0 -%}
+              {%- for next_block in section.blocks offset: forloop.index -%}
+                {%- if next_block.type == 'button' -%}
+                  {%- assign skip_block_count = skip_block_count | plus: 1 -%}
+                  <a class="{% if next_block.settings.button_style != 'link' %}btn btn--{{ next_block.settings.button_style }}{% else %}small-feature-link{% endif %} button-row__button" href="{{ next_block.settings.button_link }}" {{ block.shopify_attributes }}>{{ next_block.settings.button_label | escape }}</a>
+                {%- else -%}
+                  {%- break -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+
+          {% when 'image' %}
+            <div class="lightly-spaced-row lightly-spaced-row-above inline-width-container" style="width: {{ block.settings.image_width }}px" {{ block.shopify_attributes }}>
+              {% if block.settings.url != blank %}<a href="{{ block.settings.url }}">{% endif %}
+                {% if block.settings.image != blank %}
+                  {% render 'responsive-image', image: block.settings.image %}
+                {% else %}
+                  <div class="placeholder-image">
+                    {{- 'image' | placeholder_svg_tag: 'placeholder-svg' -}}
+                  </div>
+                {% endif %}
+              {% if block.settings.url != blank %}</a>{% endif %}
+            </div>
+
+          {% when 'icon' %}
+            <div class="lightly-spaced-row" {{ block.shopify_attributes }}>
+              <span class="large-light-icon">
+                {% render 'icon', icon: block.settings.icon, size: 'medium' %}
+              </span>
+            </div>
+
+        {% endcase %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+
+{% schema %}
+  {
+    "name": "Rich text",
+    "class": "section-rich-text",
+    "settings": [
+      {
+      "type": "range",
+      "id": "padding_top",
+      "min": 20,
+      "max": 120,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 20,
+      "max": 120,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 60
+    },       {
+      "type": "select",
+      "id": "background_color",
+      "label": "Background option",
+      "options": [
+        {
+          "value": "rgba(239, 234, 228, 0.23)",
+          "label": "Light - low opacity"
+        },
+        {
+          "value": "rgba(239, 234, 228, 0.37)",
+          "label": "light- medium opacity"
+        },
+        {
+          "value": "#ffffff",
+          "label": "white"
+        }
+      ],
+      "default": "#ffffff"
+    },      {
+        "type": "select",
+        "id": "height",
+        "label": "Section height",
+        "default": "medium",
+        "options": [
+          {
+            "value": "small",
+            "label": "Small"
+          },
+          {
+            "value": "medium",
+            "label": "Medium"
+          },
+          {
+            "value": "large",
+            "label": "Large"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "text_alignment",
+        "label": "Text alignment",
+        "default": "center",
+        "options": [
+          {
+            "value": "left",
+            "label": "Left"
+          },
+          {
+            "value": "center",
+            "label": "Center"
+          },
+          {
+            "value": "right",
+            "label": "Right"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "full_width",
+        "label": "Wide display",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "use_alt_bg",
+        "label": "Use alternate section color",
+        "default": false
+      }
+    ],
+    "blocks": [
+      {
+        "type": "heading",
+        "name": "Heading",
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Heading",
+            "default": "Rich text"
+          },
+          {
+      "id": "center_heading",
+      "type": "checkbox",
+      "label": "Center heading",
+      "default": false
+    },          {
+          "type": "range",
+          "id": "title_size",
+          "min": 8,
+          "max": 82,
+          "step": 1,
+          "label": "Title size",
+          "unit": "px",
+          "default": 18
+        },  
+          {
+    "type": "select",
+    "id": "title_weight",
+    "label": "Title weight",
+    "options": [
+      {
+        "value": "300",
+        "label": "Light"
+      },
+      {
+        "value": "400",
+        "label": "Normal"
+      },
+      {
+        "value": "700",
+        "label": "bold"
+      }      
+    ],
+    "default": "400"
+  },        {
+    "type": "select",
+    "id": "title_font",
+    "label": "Title font",
+    "options": [
+      {
+        "value": "europa, serif",
+        "label": "Europa"
+      },
+      {
+        "value": "cormorant-garamond, serif",
+        "label": "Garamond"
+      }
+      
+    ],
+    "default": "europa, serif"
+  },            {
+            "type": "checkbox",
+            "id": "use_h1",
+            "label": "Set as primary page heading",
+            "info": "Use <h1> tag. One per page recommended. [Read more](https://cleancanvas.co.uk/support/symmetry/section-h1-setting)",
+            "default": false
+          }
+        ]
+      },
+      {
+        "type": "subheading",
+        "name": "Subheading",
+        "settings": [
+          {
+            "type": "text",
+            "id": "subheading",
+            "label": "Subheading",
+            "default": "Subheading"
+          },
+           {
+          "type": "range",
+          "id": "subheading_size",
+          "min": 8,
+          "max": 82,
+          "step": 1,
+          "label": "Subheading size",
+          "unit": "px",
+          "default": 18
+        },
+          {
+    "type": "select",
+    "id": "subheading_font",
+    "label": "Subheading font",
+    "options": [
+      {
+        "value": "europa, serif",
+        "label": "Europa"
+      },
+      {
+        "value": "cormorant-garamond, serif",
+        "label": "Garamond"
+      }
+      
+    ],
+    "default": "europa, serif"
+  },        
+         {
+    "type": "select",
+    "id": "subheading_weight",
+    "label": "Subheading weight",
+    "options": [
+      {
+        "value": "300",
+        "label": "Light"
+      },
+      {
+        "value": "400",
+        "label": "Normal"
+      },
+      {
+        "value": "700",
+        "label": "bold"
+      }      
+    ],
+    "default": "400"
+  }
+        ]
+      },
+      {
+        "type": "text",
+        "name": "Text",
+        "settings": [
+          {
+            "type": "richtext",
+            "id": "text",
+            "label": "Text",
+            "default": "<p>Use this text to share information about your store with your customers. Describe products, share announcements, or welcome customers to your store.</p>"
+          },
+          {
+            "type": "checkbox",
+            "id": "enlarge_text",
+            "label": "Enlarge text",
+            "default": true
+          }
+        ]
+      },
+      {
+        "type": "button",
+        "name": "Button",
+        "settings": [
+          {
+            "type": "paragraph",
+            "content": "Consecutive buttons will show on the same row"
+          },
+          {
+            "type": "text",
+            "id": "button_label",
+            "label": "Button",
+            "default": "Button text"
+          },
+          {
+            "type": "url",
+            "id": "button_link",
+            "label": "Button link"
+          },
+          {
+            "type": "select",
+            "id": "button_style",
+            "label": "Button style",
+            "default": "primary",
+            "options": [
+              {
+                "label": "Button - primary",
+                "value": "primary"
+              },
+              {
+                "label": "Button - secondary",
+                "value": "secondary"
+              },
+              {
+                "label": "Link",
+                "value": "link"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "icon",
+        "name": "Icon",
+        "settings": [
+          {
+            "type": "select",
+            "id": "icon",
+            "label": "Icon",
+            "default": "star",
+            "options": [
+              {
+                "value": "award",
+                "label": "Award"
+              },
+              {
+                "value": "box",
+                "label": "Box"
+              },
+              {
+                "value": "briefcase",
+                "label": "Briefcase"
+              },
+              {
+                "value": "calendar",
+                "label": "Calendar"
+              },
+              {
+                "value": "chat_bubble",
+                "label": "Chat bubble"
+              },
+              {
+                "value": "check_mark",
+                "label": "Check mark"
+              },
+              {
+                "value": "check_mark_in_circle",
+                "label": "Check mark in circle"
+              },
+              {
+                "value": "clock",
+                "label": "Clock"
+              },
+              {
+                "value": "credit_card",
+                "label": "Credit card"
+              },
+              {
+                "value": "dollar_sign",
+                "label": "Dollar sign"
+              },
+              {
+                "value": "dryer",
+                "label": "Dryer"
+              },
+              {
+                "value": "eye",
+                "label": "Eye"
+              },
+              {
+                "value": "feather",
+                "label": "Feather"
+              },
+              {
+                "value": "gift",
+                "label": "Gift"
+              },
+              {
+                "value": "heart",
+                "label": "Heart"
+              },
+              {
+                "value": "iron",
+                "label": "Iron"
+              },
+              {
+                "value": "leaf",
+                "label": "Leaf"
+              },
+              {
+                "value": "leather",
+                "label": "Leather"
+              },
+              {
+                "value": "lock",
+                "label": "Lock"
+              },
+              {
+                "value": "map_pin",
+                "label": "Map pin"
+              },
+              {
+                "value": "pants",
+                "label": "Pants"
+              },
+              {
+                "value": "percent",
+                "label": "Percent"
+              },
+              {
+                "value": "plane",
+                "label": "Plane"
+              },
+              {
+                "value": "price_tag",
+                "label": "Price tag"
+              },
+              {
+                "value": "question_mark",
+                "label": "Question mark"
+              },
+              {
+                "value": "return",
+                "label": "Return"
+              },
+              {
+                "value": "ruler",
+                "label": "Ruler"
+              },
+              {
+                "value": "scissors",
+                "label": "Scissors"
+              },
+              {
+                "value": "shirt",
+                "label": "Shirt"
+              },
+              {
+                "value": "shoe",
+                "label": "Shoe"
+              },
+              {
+                "value": "silhouette",
+                "label": "Silhouette"
+              },
+              {
+                "value": "star",
+                "label": "Star"
+              },
+              {
+                "value": "truck",
+                "label": "Truck"
+              },
+              {
+                "value": "washing",
+                "label": "Washing"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "image",
+        "name": "Image",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "range",
+            "id": "image_width",
+            "min": 60,
+            "max": 700,
+            "step": 10,
+            "unit": "px",
+            "label": "Image width",
+            "default": 260
+          },
+          {
+            "type": "url",
+            "id": "url",
+            "label": "Link"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Rich text",
+        "settings": {},
+        "blocks": [
+          {
+            "type": "heading"
+          },
+          {
+            "type": "text"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}
